@@ -1,4 +1,4 @@
-import ichgramServer from './server';
+import lightKiteServer from './server';
 import 'reflect-metadata';
 
 export * from './decorators';
@@ -7,4 +7,4 @@ export * from './middlewares';
 export * from './types';
 export * from './enums';
 export * from './services';
-export default ichgramServer;
+export default lightKiteServer;
