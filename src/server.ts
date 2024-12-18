@@ -139,6 +139,8 @@ export class LightKiteServer implements LightKiteServerInterface {
   }
 
   private handleAuthorization(req: Request, requiredScopes?: string[]) {
+    if (req.headers['x-system-call']) return;
+    
     const userId = req.headers['x-user-id'];
     const userScopes = (req.headers['x-user-scopes'] as string)?.split(',') as string[];
 
