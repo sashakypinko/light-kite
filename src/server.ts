@@ -15,6 +15,7 @@ import {convertValidationErrors} from './utils/convert-validation-errors';
 import ValidationException from './exceptions/validation.exception';
 
 export class LightKiteServer implements LightKiteServerInterface {
+  public socket: Server;
   private readonly iocContainer: Container;
   private readonly express: Express;
   private readonly httpServer: HttpServer;
@@ -34,13 +35,13 @@ export class LightKiteServer implements LightKiteServerInterface {
     this.registerControllers();
   }
 
-  useUserSocket(jwtSecret: string, options?: Partial<ServerOptions>) {
+  useUserSocket(jwtSecret: string, options?: Partial<ServerOptions>, eventServices: string[] = []) {
     const io = new Server(this.httpServer, options);
     this.userConnections = new Map();
 
     io.use(this.createSocketAuthMiddleware(jwtSecret));
 
-    io.on('connection', (socket) => this.handleSocketConnection(socket));
+    io.on('connection', (socket) => this.handleSocketConnection(socket, eventServices));
   }
 
   run(port: number, callback: () => void): void {
@@ -128,7 +129,7 @@ export class LightKiteServer implements LightKiteServerInterface {
     };
   }
 
-  private handleSocketConnection(socket: Socket) {
+  private handleSocketConnection(socket: Socket, eventServices: string[]) {
     const { userId } = socket.data.auth;
 
     this.userConnections.set(userId, socket);
@@ -136,6 +137,14 @@ export class LightKiteServer implements LightKiteServerInterface {
     socket.on('disconnect', () => {
       this.userConnections.delete(userId);
     });
+
+    for (const serviceType of eventServices) {
+      const service = this.iocContainer.get<any>(Symbol.for(serviceType));
+
+      if (service) {
+        service.handleEvents(this.userConnections, socket);
+      }
+    }
   }
 
   private handleAuthorization(req: Request, requiredScopes?: string[]) {

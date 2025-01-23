@@ -1,6 +1,6 @@
 {
   "name": "light-kite",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "LightKite is a lightweight, minimalistic library to simplify the creation of RESTful APIs using decorators in Node.js",
   "repository": {
     "type": "git",
